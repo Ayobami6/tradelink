@@ -41,10 +41,10 @@ class ChatAI(APIView):
         # Will process the message with AI and add the AI message
         chats_ref.push(
             {
-                "message": "This is new AI message",
-                "sender": "AI",
-                "timestamp": datetime.now().timestamp(),
-                "usernames": "GetLinkedAI",
+                "text": "Changed Named",
+                "userType": "AI",
+                "timestamp": datetime.now().isoformat(),
+                "username": "GetLinkedAI",
             }
         )
         return service_response(
