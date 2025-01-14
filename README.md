@@ -20,3 +20,9 @@ WSGI_APPLICATION = '<project_name>.wsgi.application'  # settings.py
 ```sh
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', '<project_name>.settings') # asgi.py, wsgi.py and manage.py
 ```
+
+### Rename th poetry project name
+
+```sh
+name = "starter-project"  name="project_name" # project.toml
+```
