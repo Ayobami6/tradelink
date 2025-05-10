@@ -12,7 +12,7 @@ class ProductAssetsAdmin(admin.StackedInline):
 
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductAssetsAdmin]
-    list_display = ("name", "price", "created_at", "updated_at")
+    list_display = ("name", "price", "created_at", "updated_at", "available_quantity")
     list_filter = ("created_at", "updated_at")
     search_fields = ("name", "description")
     date_hierarchy = "created_at"

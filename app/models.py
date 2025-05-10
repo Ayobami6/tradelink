@@ -24,6 +24,21 @@ class Product(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
 
+    def is_available(self, quantity: int) -> bool:
+        """checks if the quantity to purchase is available
+
+        Args:
+            quantity (int): quantity to check for
+
+        Returns:
+            bool: True/False
+        """
+        return self.available_quantity >= quantity
+
+    def reduce_available_quantity(self, quantity: int):
+        self.available_quantity -= quantity
+        self.save()
+
 
 @str_meta
 class ProductAssets(models.Model):
@@ -36,8 +51,16 @@ class ProductAssets(models.Model):
 
 
 class Cart(models.Model):
-    cart_id = models.UUIDField(default=uuid.uuid4, unique=True)
+    cart_id = models.UUIDField(default=uuid.uuid4, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.cart_id:
+            self.cart_id = uuid.uuid4()
+        super().save(*args, **kwargs)
+
+    def total_items(self):
+        return len(self.items.all())
 
 
 class CartItem(models.Model):
