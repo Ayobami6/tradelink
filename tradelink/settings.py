@@ -13,9 +13,14 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import logging
 from datetime import timedelta
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 
 from sparky_utils.logger import LoggerConfig
+
+from utils.utils import get_env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,6 +50,10 @@ INSTALLED_APPS = [
     # third party libraries
     "rest_framework",
     "corsheaders",
+    "cloudinary",
+    "cloudinary_storage",
+    "django_celery_beat",
+    "django_celery_results",
 ]
 
 MIDDLEWARE = [
@@ -83,10 +92,25 @@ WSGI_APPLICATION = "tradelink.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": get_env("DATABASE_NAME", "glint_db"),
+        "USER": get_env("DATABASE_USER", "user"),
+        "PASSWORD": get_env("DATABASE_PASSWORD", "password"),
+        "HOST": get_env("DATABASE_HOST", "localhost"),
+        "PORT": "5432",
     }
 }
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.hostinger.com"
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_USE_TLS = False
+EMAIL_HOST_USER = get_env("EMAIL_HOST_USER", "email")
+EMAIL_HOST_PASSWORD = get_env("EMAIL_HOST_PASSWORD", "password")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 # Password validation
@@ -142,6 +166,29 @@ TIME_ZONE = "Africa/Lagos"
 USE_I18N = True
 
 USE_TZ = False
+
+# CELERY
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/2"
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_RESULTS_EXTENDED = True
+
+
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": get_env("CLOUDINARY_CLOUD_NAME", "your-cloud-name"),
+    "API_KEY": get_env("CLOUDINARY_API_KEY", "your-api-key"),
+    "API_SECRET": get_env("CLOUDINARY_API_SECRET", "your"),
+}
+
+cloudinary.config(
+    cloud_name=get_env("CLOUDINARY_CLOUD_NAME", "your-cloud-name"),
+    api_key=get_env("CLOUDINARY_API_KEY", "your-api-key"),
+    api_secret=get_env("CLOUDINARY_API_SECRET", "your"),
+    secure=True,
+)
 
 
 # Static files (CSS, JavaScript, Images)
