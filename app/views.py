@@ -3,8 +3,11 @@ from rest_framework import viewsets
 from sparky_utils.response import service_response
 from sparky_utils.advice import exception_advice
 from rest_framework.views import APIView
+from typing import List
+from utils.utils import paginate
+from django.db.models import Prefetch
 
-from app.models import Product
+from app.models import Product, ProductAssets
 from app.serializers import ProductSerializer
 
 # Create your views here.
@@ -25,18 +28,17 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
-    @exception_advice
+    @exception_advice()
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        # if page is not None:
-        #     serializer = self.get_serializer(page, many=True)
-        #     return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(page, many=True)
-        data = self.get_paginated_response(serializer.data)
+        assets_fields: List[str] = ["name", "image", "alt"]
+        page = request.query_params.get("page", 1)
+        size = request.query_params.get("size", 10)
+        products = Product.objects.prefetch_related(
+            Prefetch("assets", queryset=ProductAssets.objects.only(*assets_fields))
+        ).all()
+        response = paginate(products, int(page), request, int(size), ProductSerializer)
         return service_response(
-            data=data,
+            data=response,
             message="Products retrieved successfully",
             status_code=200,
             status="success",

@@ -31,10 +31,10 @@ def paginate(
     """Paginate the data and return the paginated data"""
     paginator = Paginator(data, page_size)
     request_url = request.build_absolute_uri()
-    base_url = request_url.rsplit("/", 2)[0] + "/"
-    next_url = f"{base_url}?page={int(page) + 1}/"
+    print("Lets see the request url :", request_url)
+    next_url = f"{request_url}?page={int(page) + 1}"
     prev_number = int(page) - 1
-    prev_url = f"{base_url}?page={prev_number}" if prev_number > 0 else None
+    prev_url = f"{request_url}?page={prev_number}" if prev_number > 0 else None
 
     try:
         data_page = paginator.page(page)

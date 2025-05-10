@@ -3,8 +3,10 @@ from .models import Product, ProductAssets
 
 
 class ProductAssetsSerializer(serializers.ModelSerializer):
-    model = ProductAssets
-    fields = ("name", "image", "alt")
+
+    class Meta:
+        model = ProductAssets
+        fields = ("name", "image", "alt")
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -12,15 +14,4 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = (
-            "id",
-            "name",
-            "price",
-            "description",
-            "views",
-            "discount_price",
-            "top_deal",
-            "created_at",
-            "updated_at",
-            "assets",
-        )
+        fields = "__all__"

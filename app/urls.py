@@ -1,4 +1,8 @@
-from django.urls import path
+from django.urls import path, include
 from .views import ProductViewSet
+from rest_framework.routers import SimpleRouter
 
-urlpatterns = [path("products/", ProductViewSet.as_view(), name="product-list")]
+router = SimpleRouter(trailing_slash=False)
+router.register("products", ProductViewSet, basename="products")
+
+urlpatterns = [path("", include(router.urls))]
