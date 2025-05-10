@@ -39,6 +39,10 @@ class Product(models.Model):
         self.available_quantity -= quantity
         self.save()
 
+    def restock_available_quantity(self, quantity: int):
+        self.available_quantity += quantity
+        self.save()
+
 
 @str_meta
 class ProductAssets(models.Model):

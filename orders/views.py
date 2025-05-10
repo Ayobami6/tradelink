@@ -80,6 +80,7 @@ class RemoveFromCartView(APIView):
         product = Product.objects.get(id=product_id)
         # get cart item
         cart_item = CartItem.objects.get(cart=cart, product=product)
+        product.restock_available_quantity(cart_item.quantity)
         # delete cart item
         cart_item.delete()
         data = {
