@@ -92,3 +92,40 @@ class RemoveFromCartView(APIView):
             status_code=200,
             status="success",
         )
+
+
+class CartDetail(APIView):
+
+    @exception_advice()
+    def get(self, request, *args, **kwargs):
+        # get cart id from session
+        cart_id = request.session.get("cart_id")
+        if not cart_id:
+            return service_response(
+                data={},
+                message="Cart not found",
+                status_code=400,
+                status="error",
+            )
+        cart = Cart.objects.get(cart_id=cart_id)
+        data = {
+            "items_count": cart.total_items(),
+            "items": [
+                {
+                    "product_id": cart_item.product.id,
+                    "product_name": cart_item.product.name,
+                    "product_price": cart_item.product.price,
+                    "product_image": cart_item.product.assets.all()[0].image.url,
+                    "quantity": cart_item.quantity,
+                    "total_price": cart_item.total_price(),
+                }
+                for cart_item in cart.items.all()
+            ],
+            "total_price": cart.total_price(),
+        }
+        return service_response(
+            data=data,
+            message="Cart details",
+            status_code=200,
+            status="success",
+        )
