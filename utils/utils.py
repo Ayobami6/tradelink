@@ -3,6 +3,8 @@ from typing import Any, List, Union, Tuple, Dict
 from dotenv import load_dotenv
 from django.db.models.query import QuerySet
 from django.core.paginator import PageNotAnInteger, EmptyPage, Paginator
+import string
+import random
 
 load_dotenv()
 
@@ -63,3 +65,9 @@ def paginate(
         data_key: jsonified_data,
     }
     return resp
+
+
+def generate_ref() -> str:
+    """Generates unique string"""
+    code = "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
+    return code.upper()

@@ -18,6 +18,8 @@ class Product(models.Model):
     views = models.IntegerField(default=0)
     discount_price = models.DecimalField(max_digits=10, decimal_places=2)
 
+    available_quantity = models.IntegerField(default=0)
+
     top_deal = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
