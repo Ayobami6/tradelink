@@ -43,3 +43,14 @@ class ProductViewSet(viewsets.ModelViewSet):
             status_code=200,
             status="success",
         )
+
+    @exception_advice()
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return service_response(
+            data=serializer.data,
+            message="Product retrieved successfully",
+            status_code=200,
+            status="success",
+        )
