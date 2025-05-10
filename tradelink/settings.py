@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     "cloudinary_storage",
     "django_celery_beat",
     "django_celery_results",
+    # installes apps
+    "app",
 ]
 
 MIDDLEWARE = [
