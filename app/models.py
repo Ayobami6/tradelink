@@ -5,6 +5,8 @@ import uuid
 from cloudinary.models import CloudinaryField
 from django.core.validators import MinValueValidator
 
+from utils.constants import Courier
+
 # Create your models here.
 
 
@@ -90,3 +92,45 @@ class CartItem(models.Model):
 
     def total_price(self):
         return self.product.price * self.quantity
+
+
+class CourierRate(models.Model):
+    """Partner logistics Rate"""
+
+    id = models.BigAutoField(primary_key=True)
+
+    kg = models.FloatField(validators=[MinValueValidator(0.0)])
+    uk = models.FloatField(
+        validators=[MinValueValidator(0.0)], help_text="UK rate per kg"
+    )
+    w_africa = models.FloatField(
+        validators=[MinValueValidator(0.0)], help_text="West Africa rate per kg"
+    )
+    usa = models.FloatField(
+        validators=[MinValueValidator(0.0)], help_text="USA rate per kg"
+    )
+    europe = models.FloatField(
+        validators=[MinValueValidator(0.0)], help_text="Europe rate per kg"
+    )
+    e_africa = models.FloatField(
+        validators=[MinValueValidator(0.0)], help_text="East Africa rate per kg"
+    )
+    asia = models.FloatField(
+        validators=[MinValueValidator(0.0)], help_text="Asia rate per kg"
+    )
+    china = models.FloatField(
+        validators=[MinValueValidator(0.0)], help_text="China rate per kg"
+    )
+    caribbean = models.FloatField(
+        validators=[MinValueValidator(0.0)], help_text="Caribbean rate per kg"
+    )
+    courier = models.CharField(
+        max_length=100, null=True, blank=True, choices=Courier.choices()
+    )
+
+    def __str__(self) -> str:
+        return f"{self.courier} {self.kg}kg"
+
+    class Meta:
+        verbose_name_plural = "Partners Logistics Courier Rates"
+        verbose_name = "Partners Logistics Courier Rate"

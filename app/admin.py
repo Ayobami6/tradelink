@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Product, ProductAssets, Cart
+from .models import CourierRate, Product, ProductAssets, Cart
+from import_export import resources
+from import_export.admin import ImportExportModelAdmin
 
 # Register your models here.
 
@@ -12,7 +14,15 @@ class ProductAssetsAdmin(admin.StackedInline):
 
 class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductAssetsAdmin]
-    list_display = ("name", "price", "created_at", "updated_at", "available_quantity", "vendor_price", "weight_in_kg")
+    list_display = (
+        "name",
+        "price",
+        "created_at",
+        "updated_at",
+        "available_quantity",
+        "vendor_price",
+        "weight_in_kg",
+    )
     list_filter = ("created_at", "updated_at")
     search_fields = ("name", "description")
     date_hierarchy = "created_at"
@@ -42,6 +52,45 @@ class CartAdmin(admin.ModelAdmin):
         return obj.total_price()
 
     total_price.short_description = "Total Price"
+
+
+class CourierRateResource(resources.ModelResource):
+    class Meta:
+        model = CourierRate
+        fields = (
+            "courier",
+            "kg",
+            "w_africa",
+            "usa",
+            "uk",
+            "europe",
+            "e_africa",
+            "asia",
+            "china",
+            "caribbean",
+        )
+        import_id_fields = ("courier", "kg")
+        import_order = ("courier", "kg")
+
+
+@admin.register(CourierRate)
+class CourierRateAdmin(ImportExportModelAdmin):
+    resource_class = CourierRateResource
+    list_display = (
+        "courier",
+        "kg",
+        "w_africa",
+        "usa",
+        "uk",
+        "europe",
+        "e_africa",
+        "asia",
+        "china",
+        "caribbean",
+    )
+    list_filter = ("courier",)
+    search_fields = ("courier", "kg")
+    ordering = ("courier", "kg")
 
 
 admin.site.register(Product, ProductAdmin)
