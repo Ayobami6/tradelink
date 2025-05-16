@@ -8,6 +8,12 @@ class ProductAssetsSerializer(serializers.ModelSerializer):
         model = ProductAssets
         fields = ("name", "image", "alt")
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        image_url = instance.image.url
+        data["image"] = image_url
+        return data
+
 
 class ProductSerializer(serializers.ModelSerializer):
     assets = ProductAssetsSerializer(many=True, read_only=True)
