@@ -13,10 +13,14 @@ class Product(models.Model):
         default=uuid.uuid4, editable=False, unique=True, primary_key=True
     )
     name = models.CharField(max_length=500)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.FloatField(editable=False)
     description = models.TextField(null=True, blank=True)
+    vendor_price = models.FloatField(default=0)
     views = models.IntegerField(default=0)
-    discount_price = models.DecimalField(max_digits=10, decimal_places=2)
+    weight_in_kg = models.CharField(
+        max_length=100, help_text="Product weight in kg", null=True
+    )
+    discount_price = models.FloatField(null=True, blank=True)
 
     available_quantity = models.IntegerField(default=0)
 
@@ -57,6 +61,7 @@ class ProductAssets(models.Model):
 class Cart(models.Model):
     cart_id = models.UUIDField(default=uuid.uuid4, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(default=timezone.now)
 
     def save(self, *args, **kwargs):
         if not self.cart_id:
