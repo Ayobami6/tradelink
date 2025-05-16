@@ -3,6 +3,7 @@ from sparky_utils.decorators import str_meta
 from django.utils import timezone
 import uuid
 from cloudinary.models import CloudinaryField
+from django.core.validators import MinValueValidator
 
 # Create your models here.
 
@@ -15,14 +16,18 @@ class Product(models.Model):
     name = models.CharField(max_length=500)
     price = models.FloatField(editable=False)
     description = models.TextField(null=True, blank=True)
-    vendor_price = models.FloatField(default=0)
+    vendor_price = models.FloatField(default=0, validators=[MinValueValidator(0.0)])
     views = models.IntegerField(default=0)
     weight_in_kg = models.CharField(
         max_length=100, help_text="Product weight in kg", null=True
     )
-    discount_price = models.FloatField(null=True, blank=True)
+    discount_price = models.FloatField(
+        null=True, blank=True, validators=[MinValueValidator(0.0)]
+    )
 
-    available_quantity = models.IntegerField(default=0)
+    available_quantity = models.IntegerField(
+        default=0, validators=[MinValueValidator(0)]
+    )
 
     top_deal = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
