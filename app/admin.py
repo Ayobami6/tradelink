@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CourierRate, Product, ProductAssets, Cart, AppSetting
+from .models import CourierRate, Product, ProductAssets, Cart, AppSetting, ExchangeRate
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
@@ -36,7 +36,12 @@ class ProductAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         # add 20 % of the vendor price
         if obj.vendor_price:
-            obj.price = obj.vendor_price + (float(obj.vendor_price) * 0.2)
+            percentage_multiplier = 0.2
+            if obj.use_custom_fee_percentage:
+                percentage_multiplier = float(obj.custom_fee_percentage)
+            obj.price = obj.vendor_price + (
+                float(obj.vendor_price) * percentage_multiplier
+            )
         super().save_model(request, obj, form, change)
 
 
@@ -111,5 +116,13 @@ class CourierRateAdmin(ImportExportModelAdmin):
     ordering = ("courier", "kg")
 
 
+class ExcahngeRateAdmin(admin.ModelAdmin):
+    list_display = ("currency_code", "rate")
+    list_filter = ("currency_code",)
+    search_fields = ("currency_code",)
+    ordering = ("currency_code",)
+
+
+admin.site.register(ExchangeRate, ExcahngeRateAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(AppSetting, AppSettingAdmin)

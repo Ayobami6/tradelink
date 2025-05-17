@@ -4,6 +4,7 @@ from django.utils import timezone
 import uuid
 from cloudinary.models import CloudinaryField
 from django.core.validators import MinValueValidator
+from utils.constants import custom_fee_percentage_list
 
 from utils.constants import Courier
 
@@ -29,6 +30,10 @@ class Product(models.Model):
 
     available_quantity = models.IntegerField(
         default=0, validators=[MinValueValidator(0)]
+    )
+    use_custom_fee_percentage = models.BooleanField(default=False)
+    custom_fee_percentage = models.CharField(
+        max_length=200, choices=custom_fee_percentage_list, default="0.2"
     )
 
     top_deal = models.BooleanField(default=False)
@@ -159,3 +164,13 @@ class AppSetting(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class ExchangeRate(models.Model):
+    currency_code = models.CharField(max_length=10, unique=True)
+    rate = models.FloatField(validators=[MinValueValidator(0.0)])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"{self.currency_code} - {self.rate}"

@@ -104,7 +104,7 @@ class ShippingFeeAPIView(APIView):
         cart.save()
 
         return service_response(
-            data={"shipping_fee": shipping_fee},
+            data={"shipping_fee": shipping_fee, "cart_id": cart.cart_id},
             message="Shipping fee retrieved successfully",
             status_code=200,
             status="success",

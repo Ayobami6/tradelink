@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import CartItem, Product, ProductAssets, Cart
+from utils.utils import get_client_ip, get_country_currency_from_ip
+from utils.constants import country_currency_map
 
 
 class ProductAssetsSerializer(serializers.ModelSerializer):
@@ -20,7 +22,31 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = "__all__"
+        fields = (
+            "id",
+            "name",
+            "price",
+            "description",
+            "assets",
+            "weight_in_kg",
+            "views",
+            "discount_price",
+            "available_quantity",
+            "top_deal",
+        )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get("request")
+        ip = get_client_ip(request)
+        country = get_country_currency_from_ip(ip)
+        data["country"] = country
+        currency_details = country_currency_map.get(country)
+        currency = currency_details.get("currency", "NGN")
+        symbol = currency_details.get("symbol", "₦")
+        data["currency"] = currency
+        data["symbol"] = symbol
+        return data
 
 
 class CartItemSerializer(serializers.ModelSerializer):
