@@ -186,8 +186,8 @@ CELERY_RESULTS_EXTENDED = True
 CELERY_BEAT_SCHEDULE = {
     "update_exchange_rates": {
         "task": "app.tasks.update_exchange_rates",
-        # "schedule": crontab(hour=0, minute=0),  # every day at midnight
-        "schedule": timedelta(minutes=5),
+        "schedule": crontab(hour=0, minute=0),  # every day at midnight
+        # "schedule": timedelta(minutes=5),
     },
 }
 
