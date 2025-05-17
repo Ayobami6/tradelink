@@ -183,7 +183,9 @@ class CheckoutAPIView(APIView):
             "channels": [payment_method],
         }
         paystack_sdk = PaystackSDK()
-        status, response = paystack_sdk.initialize_transaction(data)
+        status, response = paystack_sdk.initialize_transaction(
+            data, int(total_payable_amount)
+        )
         if not status:
             return service_response(
                 data={},

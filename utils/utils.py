@@ -87,7 +87,7 @@ class PaystackSDK:
         }
 
     # initialize transaction
-    def initialize_transaction(self, data: dict) -> Union[bool, dict]:
+    def initialize_transaction(self, data: dict, main_amount: int) -> Union[bool, dict]:
         """Initialize transaction"""
         from app.models import AppSetting
         from orders.models import PaystackTransaction
@@ -100,7 +100,7 @@ class PaystackSDK:
             # save the transaction
             PaystackTransaction.create_record(
                 order_ref=data["reference"],
-                amount=data["amount"],
+                amount=int(main_amount),
                 customer_email=data["email"],
                 gateway_response=response.json(),
             )
@@ -108,3 +108,15 @@ class PaystackSDK:
         else:
             print("API Response: ", response.text)
             return False, {}
+
+
+def get_country_currency_from_ip(ip_addr: str) -> str:
+    """Get country from IP address"""
+    token = get_env("IPINFO_TOKEN", "")
+    response = requests.get(f"https://ipinfo.io/{ip_addr}/json?token={token}")
+    if response.status_code == 200:
+        print("This is the currenct: ", response.json())
+        return response.json()
+    else:
+        print("API Response: ", response.text)
+        return ""
