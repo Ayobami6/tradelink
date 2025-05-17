@@ -40,8 +40,11 @@ class ProductSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         ip = get_client_ip(request)
         country = get_country_currency_from_ip(ip)
+        print("Lets see the country here: ", country)
         data["country"] = country
-        currency_details = country_currency_map.get(country)
+        currency_details = country_currency_map.get(
+            country, {"currency": "EUR", "symbol": "€"}
+        )
         currency = currency_details.get("currency", "NGN")
         symbol = currency_details.get("symbol", "₦")
         data["currency"] = currency
