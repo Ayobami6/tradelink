@@ -25,3 +25,8 @@ urlpatterns = [
     path("api/v1/", include("app.urls")),
     path("api/v1/", include("orders.urls")),
 ]
+
+
+admin.site.site_header = "Cross Africa Admin Panel"
+admin.site.site_title = "Cross Africa Admin Portal"
+admin.site.index_title = "Welcome to Cross Africa Admin Portal"

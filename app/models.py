@@ -100,6 +100,8 @@ class CartItem(models.Model):
         return self.product.price * self.quantity
 
     def total_weight(self):
+        if not self.product.weight_in_kg:
+            return 0.0
         return float(self.product.weight_in_kg) * float(self.quantity)
 
 

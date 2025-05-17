@@ -38,7 +38,14 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ("cart_id", "created_at", "updated_at", "no_items", "total_price")
+    list_display = (
+        "cart_id",
+        "created_at",
+        "updated_at",
+        "no_items",
+        "total_price",
+        "weight",
+    )
     list_filter = ("created_at", "updated_at")
     search_fields = ("cart_id",)
     ordering = ("-created_at",)
@@ -50,6 +57,11 @@ class CartAdmin(admin.ModelAdmin):
 
     def total_price(self, obj):
         return obj.total_price()
+
+    def weight(self, obj):
+        return obj.total_items_weight()
+
+    weight.short_description = "Total Weight in KG"
 
     total_price.short_description = "Total Price"
 
