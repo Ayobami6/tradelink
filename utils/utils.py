@@ -99,11 +99,12 @@ class PaystackSDK:
         if response.status_code == 200:
             # save the transaction
             PaystackTransaction.create_record(
-                order_ref=data["order_ref"],
+                order_ref=data["reference"],
                 amount=data["amount"],
                 customer_email=data["email"],
                 gateway_response=response.json(),
             )
             return True, response.json()
         else:
+            print("API Response: ", response.text)
             return False, {}
