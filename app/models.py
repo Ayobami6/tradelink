@@ -73,7 +73,7 @@ class Cart(models.Model):
     )
     shipping_address = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         if not self.cart_id:
@@ -150,3 +150,12 @@ class CourierRate(models.Model):
     class Meta:
         verbose_name_plural = "Partners Logistics Courier Rates"
         verbose_name = "Partners Logistics Courier Rate"
+
+
+@str_meta
+class AppSetting(models.Model):
+    name = models.CharField(max_length=100)
+    whatapp_business_url = models.URLField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return self.name

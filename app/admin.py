@@ -1,9 +1,13 @@
 from django.contrib import admin
-from .models import CourierRate, Product, ProductAssets, Cart
+from .models import CourierRate, Product, ProductAssets, Cart, AppSetting
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
 # Register your models here.
+
+
+class AppSettingAdmin(admin.ModelAdmin):
+    list_display = ("name", "whatapp_business_url")
 
 
 class ProductAssetsAdmin(admin.StackedInline):
@@ -108,3 +112,4 @@ class CourierRateAdmin(ImportExportModelAdmin):
 
 
 admin.site.register(Product, ProductAdmin)
+admin.site.register(AppSetting, AppSettingAdmin)
