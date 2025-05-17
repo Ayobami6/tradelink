@@ -6,10 +6,10 @@ from rest_framework.views import APIView
 from typing import List
 from utils.utils import paginate
 from django.db.models import Prefetch
-from utils.constants import shipping_region
+from utils.constants import Courier, shipping_region
 
-from app.models import Product, ProductAssets
-from app.serializers import ProductSerializer
+from app.models import Cart, CourierRate, Product, ProductAssets
+from app.serializers import ProductSerializer, ShippingFeeSerializer
 
 # Create your views here.
 
@@ -69,3 +69,34 @@ class ShippingRegionAPIView(APIView):
         )
 
 
+class ShippingFeeAPIView(APIView):
+    """Returns the shipping fee"""
+
+    def post(self, request, *args, **kwargs):
+        serializer = ShippingFeeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        cart_id = data.get("cart_id")
+        shipping_region = data.get("shipping_region")
+        courier = data.get("courier")
+        courier_choices = Courier.values()
+        if courier not in courier_choices:
+            return service_response(
+                data={},
+                message="Unsupported logistics courier",
+                status_code=400,
+                status="error",
+            )
+        cart = Cart.objects.get(cart_id=cart_id)
+        total_weight = cart.total_items_weight()
+        courier_rate = CourierRate.objects.filter(
+            courier=courier, kg__gte=total_weight
+        ).first()
+        # get the rate for the shipping region
+        shipping_fee = courier_rate.__getattribute__(shipping_region)
+        return service_response(
+            data={"shipping_fee": shipping_fee},
+            message="Shipping fee retrieved successfully",
+            status_code=200,
+            status="success",
+        )

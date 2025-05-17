@@ -7,6 +7,10 @@ class EnumBaseClass:
     def choices(cls):
         return [(x.value, x.name) for x in cls]
 
+    @classmethod
+    def values(cls):
+        return [x.value for x in cls]
+
 
 class OrderStatus(EnumBaseClass, Enum):
     PENDING = "PENDING"

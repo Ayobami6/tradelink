@@ -20,8 +20,8 @@ class Product(models.Model):
     description = models.TextField(null=True, blank=True)
     vendor_price = models.FloatField(default=0, validators=[MinValueValidator(0.0)])
     views = models.IntegerField(default=0)
-    weight_in_kg = models.CharField(
-        max_length=100, help_text="Product weight in kg", null=True
+    weight_in_kg = models.FloatField(
+        validators=[MinValueValidator(0.0)], help_text="Product weight in kg", null=True
     )
     discount_price = models.FloatField(
         null=True, blank=True, validators=[MinValueValidator(0.0)]
@@ -84,6 +84,12 @@ class Cart(models.Model):
             total += item.product.price * item.quantity
         return total
 
+    def total_items_weight(self):
+        total_weight = 0.0
+        for item in self.items.all():
+            total_weight += item.total_weight()
+        return total_weight
+
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, related_name="items", on_delete=models.CASCADE)
@@ -92,6 +98,9 @@ class CartItem(models.Model):
 
     def total_price(self):
         return self.product.price * self.quantity
+
+    def total_weight(self):
+        return float(self.product.weight_in_kg) * float(self.quantity)
 
 
 class CourierRate(models.Model):

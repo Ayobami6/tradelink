@@ -37,3 +37,9 @@ class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = ["cart_id", "items"]
+
+
+class ShippingFeeSerializer(serializers.Serializer):
+    cart_id = serializers.CharField()
+    shipping_region = serializers.CharField()
+    courier = serializers.CharField()
