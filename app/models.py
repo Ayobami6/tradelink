@@ -159,3 +159,13 @@ class AppSetting(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class ExchangeRate(models.Model):
+    currency_code = models.CharField(max_length=10, unique=True)
+    rate = models.FloatField(validators=[MinValueValidator(0.0)])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"{self.currency_code} - {self.rate}"

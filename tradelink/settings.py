@@ -16,6 +16,7 @@ from datetime import timedelta
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+from celery.schedules import crontab
 
 
 from sparky_utils.logger import LoggerConfig
@@ -181,6 +182,14 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERY_RESULT_BACKEND = "django-db"
 CELERY_RESULTS_EXTENDED = True
 
+
+CELERY_BEAT_SCHEDULE = {
+    "update_exchange_rates": {
+        "task": "app.tasks.update_exchange_rates",
+        # "schedule": crontab(hour=0, minute=0),  # every day at midnight
+        "schedule": timedelta(minutes=5),
+    },
+}
 
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": get_env("CLOUDINARY_CLOUD_NAME", "your-cloud-name"),

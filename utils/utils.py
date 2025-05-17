@@ -141,3 +141,18 @@ def get_client_ip(request):
     else:
         ip = request.META.get("REMOTE_ADDR")
     return ip
+
+
+def get_exchange_rate() -> dict:
+    """Get exchange rate"""
+
+    api_key = get_env("EXCHANGE_RATE_API_KEY", "")
+    base_url = f"https://v6.exchangerate-api.com/v6/{api_key}/latest/NGN"
+
+    response = requests.get(base_url)
+    if response.status_code == 200:
+        rates = response.json().get("conversion_rates", {})
+        return rates
+    else:
+        print("API Response: ", response.text)
+        return {}
