@@ -17,16 +17,19 @@ class Order(models.Model):
     user_email = models.EmailField()
     total_amount = models.FloatField(default=0.0, validators=[MinValueValidator(0.0)])
     order_status = models.CharField(
-        max_length=20, choices=OrderStatus.choices(), default=OrderStatus.PENDING
+        max_length=200, choices=OrderStatus.choices(), default=OrderStatus.PENDING.value
     )
     payment_status = models.CharField(
-        max_length=20, default=PaymentStatus.PENDING, choices=PaymentStatus.choices()
+        max_length=200, default=PaymentStatus.PENDING.value, choices=PaymentStatus.choices()
     )
     shipping_address = models.TextField()
     shipping_fee = models.PositiveIntegerField(
         default=0, validators=[MinValueValidator(0)]
     )
-    order_ref = models.CharField(max_length=20, unique=True)
+    payment_method = models.CharField(
+        max_length=200, choices=[("card", "Card"), ("bank", "Bank")], default="card"
+    )
+    order_ref = models.CharField(max_length=100, unique=True)
     total_payable_amount = models.FloatField(
         default=0.0,
         validators=[MinValueValidator(0.0)],
@@ -58,7 +61,7 @@ class PaystackTransaction(models.Model):
     confirmed = models.BooleanField(default=False)
     customer_email = models.EmailField()
     status = models.CharField(
-        max_length=20, choices=PaymentStatus.choices(), default=PaymentStatus.PENDING
+        max_length=200, choices=PaymentStatus.choices(), default=PaymentStatus.PENDING.value
     )
     gateway_response = models.JSONField(null=True, blank=True)
     transaction_date = models.DateTimeField(default=timezone.now)
@@ -68,7 +71,14 @@ class PaystackTransaction(models.Model):
         return f"{self.order_ref} - {self.amount} - {self.status}"
 
     @classmethod
-    def create_record(cls, order_ref, amount, customer_email, gateway_response, status=PaymentStatus.PENDING):
+    def create_record(
+        cls,
+        order_ref,
+        amount,
+        customer_email,
+        gateway_response,
+        status=PaymentStatus.PENDING.value,
+    ):
         return cls.objects.create(
             order_ref=order_ref,
             amount=amount,

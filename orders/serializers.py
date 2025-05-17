@@ -8,3 +8,10 @@ class AddToCartSerializer(serializers.Serializer):
 
 class RemoveFromCartSerializer(serializers.Serializer):
     product_id = serializers.UUIDField()
+
+
+class CheckoutSerializer(serializers.Serializer):
+    cart_id = serializers.UUIDField()
+    total_amount = serializers.FloatField()
+    user_email = serializers.EmailField()
+    payment_method = serializers.ChoiceField(choices=["card", "bank"])
