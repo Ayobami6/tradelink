@@ -43,3 +43,5 @@ class ShippingFeeSerializer(serializers.Serializer):
     cart_id = serializers.CharField()
     shipping_region = serializers.CharField()
     courier = serializers.CharField()
+    email = serializers.EmailField()
+    shipping_address = serializers.CharField()

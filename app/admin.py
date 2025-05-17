@@ -45,6 +45,8 @@ class CartAdmin(admin.ModelAdmin):
         "no_items",
         "total_price",
         "weight",
+        "customer_email",
+        "calculated_shipping_fee",
     )
     list_filter = ("created_at", "updated_at")
     search_fields = ("cart_id",)

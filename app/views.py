@@ -72,6 +72,7 @@ class ShippingRegionAPIView(APIView):
 class ShippingFeeAPIView(APIView):
     """Returns the shipping fee"""
 
+    @exception_advice()
     def post(self, request, *args, **kwargs):
         serializer = ShippingFeeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -79,6 +80,8 @@ class ShippingFeeAPIView(APIView):
         cart_id = data.get("cart_id")
         shipping_region = data.get("shipping_region")
         courier = data.get("courier")
+        customer_email = data.get("email")
+        shipping_address = data.get("shipping_address")
         courier_choices = Courier.values()
         if courier not in courier_choices:
             return service_response(
@@ -94,6 +97,12 @@ class ShippingFeeAPIView(APIView):
         ).first()
         # get the rate for the shipping region
         shipping_fee = courier_rate.__getattribute__(shipping_region)
+        # update cart info for the cart the details
+        cart.customer_email = customer_email
+        cart.shipping_address = shipping_address
+        cart.calculated_shipping_fee = shipping_fee
+        cart.save()
+
         return service_response(
             data={"shipping_fee": shipping_fee},
             message="Shipping fee retrieved successfully",

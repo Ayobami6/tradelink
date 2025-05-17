@@ -67,6 +67,11 @@ class ProductAssets(models.Model):
 
 class Cart(models.Model):
     cart_id = models.UUIDField(default=uuid.uuid4, null=True, blank=True)
+    customer_email = models.EmailField(null=True, blank=True)
+    calculated_shipping_fee = models.CharField(
+        max_length=100, null=True, blank=True, editable=False
+    )
+    shipping_address = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(default=timezone.now)
 
