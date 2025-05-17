@@ -17,6 +17,7 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 from celery.schedules import crontab
+import os
 
 
 from sparky_utils.logger import LoggerConfig
@@ -77,7 +78,7 @@ ROOT_URLCONF = "tradelink.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -108,7 +109,7 @@ DATABASES = {
 }
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.hostinger.com"
+EMAIL_HOST = "smtp.privateemail.com"
 # EMAIL_PORT = 587
 # EMAIL_USE_TLS = True
 EMAIL_PORT = 465

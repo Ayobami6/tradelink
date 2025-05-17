@@ -12,6 +12,7 @@ from sparky_utils.response import service_response
 from utils.utils import generate_ref, PaystackSDK
 
 from app.models import Cart, Product, CartItem
+from app.tasks import send_email_async
 
 
 # Create your views here.
@@ -194,6 +195,11 @@ class CheckoutAPIView(APIView):
                 status="error",
             )
         # send email
+        subject: str = "Order Notification"
+        message: str = (
+            f"Your order with reference {order_ref} has been received and is being processed. Thank you for your purchase!"
+        )
+        send_email_async.delay("customer", message, user_email, subject)
         return service_response(
             data=response,
             message="Payment initialized",
