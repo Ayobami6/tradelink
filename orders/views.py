@@ -109,6 +109,7 @@ class CartDetail(APIView):
             )
         cart = Cart.objects.get(cart_id=cart_id)
         data = {
+            "cart_id": cart.cart_id,
             "items_count": cart.total_items(),
             "items": [
                 {
@@ -117,6 +118,7 @@ class CartDetail(APIView):
                     "product_price": cart_item.product.price,
                     "product_image": cart_item.product.assets.all()[0].image.url,
                     "quantity": cart_item.quantity,
+                    "total_weight": cart_item.total_weight(),
                     "total_price": cart_item.total_price(),
                 }
                 for cart_item in cart.items.all()

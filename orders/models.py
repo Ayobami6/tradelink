@@ -34,7 +34,7 @@ class Order(models.Model):
     )
 
     created_at = models.DateTimeField(default=timezone.now)
-    updated_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def calculate_total_payable_amount(self):
         total_amount = sum([item.subtotal() for item in self.items.all()])
@@ -50,3 +50,29 @@ class OrderItem(models.Model):
 
     def subtotal(self):
         return float(self.product.price) * float(self.quantity)
+
+
+class PaystackTransaction(models.Model):
+    order_ref = models.CharField(max_length=200)
+    amount = models.FloatField(default=0.0)
+    confirmed = models.BooleanField(default=False)
+    customer_email = models.EmailField()
+    status = models.CharField(
+        max_length=20, choices=PaymentStatus.choices(), default=PaymentStatus.PENDING
+    )
+    gateway_response = models.JSONField(null=True, blank=True)
+    transaction_date = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.order_ref} - {self.amount} - {self.status}"
+
+    @classmethod
+    def create_record(cls, order_ref, amount, customer_email, gateway_response, status=PaymentStatus.PENDING):
+        return cls.objects.create(
+            order_ref=order_ref,
+            amount=amount,
+            customer_email=customer_email,
+            gateway_response=gateway_response,
+            status=status,
+        )

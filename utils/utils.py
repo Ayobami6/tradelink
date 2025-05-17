@@ -5,6 +5,8 @@ from django.db.models.query import QuerySet
 from django.core.paginator import PageNotAnInteger, EmptyPage, Paginator
 import string
 import random
+import requests
+
 
 load_dotenv()
 
@@ -71,3 +73,37 @@ def generate_ref() -> str:
     """Generates unique string"""
     code = "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
     return code.upper()
+
+
+class PaystackSDK:
+    """Paystack SDK"""
+
+    def __init__(self) -> None:
+        self.secret_key = get_env("PAYSTACK_SECRET_KEY", "")
+        self.base_url = "https://api.paystack.co/transaction/initialize"
+        self.headers = {
+            "Authorization": f"Bearer {self.secret_key}",
+            "Content-Type": "application/json",
+        }
+
+    # initialize transaction
+    def initialize_transaction(self, data: dict) -> Union[bool, dict]:
+        """Initialize transaction"""
+        from app.models import AppSetting
+        from orders.models import PaystackTransaction
+
+        # get the app settings for whatsapp redirect
+        app_setting = AppSetting.objects.all()[0]
+        data["callback_url"] = app_setting.whatapp_business_url
+        response = requests.post(self.base_url, headers=self.headers, json=data)
+        if response.status_code == 200:
+            # save the transaction
+            PaystackTransaction.create_record(
+                order_ref=data["order_ref"],
+                amount=data["amount"],
+                customer_email=data["email"],
+                gateway_response=response.json(),
+            )
+            return True, response.json()
+        else:
+            return False, {}

@@ -20,8 +20,8 @@ class Product(models.Model):
     description = models.TextField(null=True, blank=True)
     vendor_price = models.FloatField(default=0, validators=[MinValueValidator(0.0)])
     views = models.IntegerField(default=0)
-    weight_in_kg = models.CharField(
-        max_length=100, help_text="Product weight in kg", null=True
+    weight_in_kg = models.FloatField(
+        validators=[MinValueValidator(0.0)], help_text="Product weight in kg", null=True
     )
     discount_price = models.FloatField(
         null=True, blank=True, validators=[MinValueValidator(0.0)]
@@ -67,8 +67,13 @@ class ProductAssets(models.Model):
 
 class Cart(models.Model):
     cart_id = models.UUIDField(default=uuid.uuid4, null=True, blank=True)
+    customer_email = models.EmailField(null=True, blank=True)
+    calculated_shipping_fee = models.CharField(
+        max_length=100, null=True, blank=True, editable=False
+    )
+    shipping_address = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         if not self.cart_id:
@@ -84,6 +89,12 @@ class Cart(models.Model):
             total += item.product.price * item.quantity
         return total
 
+    def total_items_weight(self):
+        total_weight = 0.0
+        for item in self.items.all():
+            total_weight += item.total_weight()
+        return total_weight
+
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, related_name="items", on_delete=models.CASCADE)
@@ -92,6 +103,11 @@ class CartItem(models.Model):
 
     def total_price(self):
         return self.product.price * self.quantity
+
+    def total_weight(self):
+        if not self.product.weight_in_kg:
+            return 0.0
+        return float(self.product.weight_in_kg) * float(self.quantity)
 
 
 class CourierRate(models.Model):
@@ -134,3 +150,12 @@ class CourierRate(models.Model):
     class Meta:
         verbose_name_plural = "Partners Logistics Courier Rates"
         verbose_name = "Partners Logistics Courier Rate"
+
+
+@str_meta
+class AppSetting(models.Model):
+    name = models.CharField(max_length=100)
+    whatapp_business_url = models.URLField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return self.name
