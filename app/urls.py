@@ -1,8 +1,11 @@
 from django.urls import path, include
-from .views import ProductViewSet
+from .views import ProductViewSet, ShippingRegionAPIView
 from rest_framework.routers import SimpleRouter
 
 router = SimpleRouter(trailing_slash=False)
 router.register("products", ProductViewSet, basename="products")
 
-urlpatterns = [path("", include(router.urls))]
+urlpatterns = [
+    path("", include(router.urls)),
+    path("shipping-regions/", ShippingRegionAPIView.as_view(), name="shipping-regions"),
+]

@@ -27,3 +27,15 @@ class PaymentStatus(EnumBaseClass, Enum):
 class Courier(EnumBaseClass, Enum):
     DHL = "DHL"
     EXPRESS = "EXPRESS"
+
+
+shipping_region = {
+    "UK": "uk",
+    "West Africa": "w_africa",
+    "USA": "usa",
+    "Europe": "europe",
+    "East Africa": "e_africa",
+    "Asia": "asia",
+    "China": "china",
+    "Caribbean": "caribbean",
+}

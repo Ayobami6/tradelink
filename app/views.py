@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from typing import List
 from utils.utils import paginate
 from django.db.models import Prefetch
+from utils.constants import shipping_region
 
 from app.models import Product, ProductAssets
 from app.serializers import ProductSerializer
@@ -54,3 +55,17 @@ class ProductViewSet(viewsets.ModelViewSet):
             status_code=200,
             status="success",
         )
+
+
+class ShippingRegionAPIView(APIView):
+    """Returns the shipping regions"""
+
+    def get(self, request, *args, **kwargs):
+        return service_response(
+            data=shipping_region,
+            message="Shipping regions retrieved successfully",
+            status_code=200,
+            status="success",
+        )
+
+
