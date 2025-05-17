@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 
-from orders.models import Order
+from orders.models import Order, OrderItem
 from .serializers import (
     AddToCartSerializer,
     CheckoutSerializer,
@@ -167,7 +167,7 @@ class CheckoutAPIView(APIView):
             cart.calculated_shipping_fee
         )
         # create order
-        _ = Order.objects.create(
+        order = Order.objects.create(
             total_amount=total_amount,
             user_email=user_email,
             payment_method=payment_method,
@@ -176,6 +176,15 @@ class CheckoutAPIView(APIView):
             shipping_fee=float(cart.calculated_shipping_fee),
             total_payable_amount=float(total_payable_amount),
         )
+        # add cart items to order
+        for cart_item in cart.items.all():
+            # create order item
+            OrderItem.objects.create(
+                order=order,
+                product=cart_item.product,
+                quantity=cart_item.quantity,
+            )
+
         # initiatlize the paystack transaction
         data = {
             "reference": order_ref,
@@ -197,9 +206,17 @@ class CheckoutAPIView(APIView):
         # send email
         subject: str = "Order Notification"
         message: str = (
-            f"Your order with reference {order_ref} has been received and is being processed. Thank you for your purchase!"
+            f"""Your order with reference {order_ref} has been received and is being processed and awaiting payment of {total_payable_amount}. Thank you for your patronage. \n
+            with Items:
+            {[{'product_name': cart_item.product.name, 'quantity': cart_item.quantity, "price": cart_item.total_price()} for cart_item in cart.items.all()]}
+            """
+        )
+        # admin message
+        admin_message: str = (
+            f"An order with reference {order_ref} has been placed. Please login to the admin panel to process the order."
         )
         send_email_async.delay("customer", message, user_email, subject)
+        send_email_async.delay("admin", admin_message, "ayobami@cross.africa", subject)
         return service_response(
             data=response,
             message="Payment initialized",
