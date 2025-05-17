@@ -106,7 +106,7 @@ class PaystackSDK:
                 customer_email=data["email"],
                 gateway_response=response.json(),
             )
-            return True, response.json()
+            return True, response.json().get("data")
         else:
             print("API Response: ", response.text)
             return False, {}

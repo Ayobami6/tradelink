@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 
-from orders.models import Order
+from orders.models import Order, OrderItem, PaystackTransaction
 from .serializers import (
     AddToCartSerializer,
     CheckoutSerializer,
@@ -9,9 +9,13 @@ from .serializers import (
 )
 from sparky_utils.advice import exception_advice
 from sparky_utils.response import service_response
-from utils.utils import generate_ref, PaystackSDK
+from utils.utils import generate_ref, PaystackSDK, get_client_ip
 
 from app.models import Cart, Product, CartItem
+from app.tasks import send_email_async
+import hmac
+import hashlib
+from utils.constants import PaymentStatus
 
 
 # Create your views here.
@@ -166,7 +170,7 @@ class CheckoutAPIView(APIView):
             cart.calculated_shipping_fee
         )
         # create order
-        _ = Order.objects.create(
+        order = Order.objects.create(
             total_amount=total_amount,
             user_email=user_email,
             payment_method=payment_method,
@@ -175,6 +179,15 @@ class CheckoutAPIView(APIView):
             shipping_fee=float(cart.calculated_shipping_fee),
             total_payable_amount=float(total_payable_amount),
         )
+        # add cart items to order
+        for cart_item in cart.items.all():
+            # create order item
+            OrderItem.objects.create(
+                order=order,
+                product=cart_item.product,
+                quantity=cart_item.quantity,
+            )
+
         # initiatlize the paystack transaction
         data = {
             "reference": order_ref,
@@ -194,9 +207,100 @@ class CheckoutAPIView(APIView):
                 status="error",
             )
         # send email
+        subject: str = "Order Notification"
+        message: str = (
+            f"""Your order with reference {order_ref} has been received and is being processed and awaiting payment of {total_payable_amount}. Thank you for your patronage. \n
+            with Items:
+            {[{'product_name': cart_item.product.name, 'quantity': cart_item.quantity, "price": cart_item.total_price()} for cart_item in cart.items.all()]}
+            """
+        )
+        # admin message
+        admin_message: str = (
+            f"An order with reference {order_ref} has been placed. Please login to the admin panel to process the order."
+        )
+        send_email_async.delay("customer", message, user_email, subject)
+        send_email_async.delay("admin", admin_message, "ayobami@cross.africa", subject)
+        # lets delete the cart
+        cart.items.all().delete()
         return service_response(
             data=response,
             message="Payment initialized",
             status_code=200,
             status="success",
+        )
+
+
+class PaystackWebhook(APIView):
+    PAYSTACK_IPS = {"52.31.139.75", "52.49.173.169", "52.214.14.220"}
+
+    def post(self, request, *args, **kwargs):
+        # check ip
+        ip = get_client_ip(request)
+        if ip not in self.PAYSTACK_IPS:
+            return service_response(
+                data={},
+                message="Unauthorized",
+                status_code=401,
+                status="error",
+            )
+        # get the signature from the header
+        signature = request.headers.get("X-Paystack-Signature")
+        if not signature:
+            return service_response(
+                data={},
+                message="Unauthorized",
+                status_code=401,
+                status="error",
+            )
+        # get the request body
+        body = request.body
+        # get the secret key from the environment
+        secret_key = PaystackSDK().secret_key
+        # verify the signature
+        computed_signature = hmac.new(
+            key=secret_key.encode("utf-8"), msg=body, digestmod=hashlib.sha512
+        ).hexdigest()
+        if not hmac.compare_digest(signature, computed_signature):
+            return service_response(
+                data={},
+                message="Invalid signature",
+                status_code=400,
+                status="error",
+            )
+        # get the event from the request body
+        event = request.data.get("event")
+        if event == "charge.success":
+            # get the reference from the request body
+            reference = request.data.get("data").get("reference")
+            # get the order from the database
+            order = Order.objects.get(order_ref=reference)
+            # update the order
+            order.payment_status = PaymentStatus.COMPLETED.value
+            order.save()
+            # update paystack transaction object too
+            paystack_transaction = PaystackTransaction.objects.get(order_ref=reference)
+            paystack_transaction.status = PaymentStatus.COMPLETED.value
+            paystack_transaction.confirmed = True
+            paystack_transaction.save()
+
+            # update the order items
+            for order_item in order.items.all():
+                order_item.product.reduce_available_quantity(order_item.quantity)
+            # send email
+            subject: str = "Order Payment Notification"
+            message: str = (
+                f"Your order with reference {reference} has been paid and is being processed. Thank you for your patronage."
+            )
+            send_email_async.delay("customer", message, order.user_email, subject)
+            return service_response(
+                data={},
+                message="Payment successful",
+                status_code=200,
+                status="success",
+            )
+        return service_response(
+            data={},
+            message="Payment unsuccessful",
+            status_code=400,
+            status="error",
         )
