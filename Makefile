@@ -20,5 +20,8 @@ shell:
 dbshell:
 	@python manage.py dbshell
 
+celery:
+	@celery -A tradelink worker -l info
+
 test:
 	@pytest

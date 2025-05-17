@@ -54,7 +54,9 @@ def paginate(
     if isinstance(data, QuerySet):
         if not serializer:
             raise Exception("Serializer must be provided for QuerySet")
-        jsonified_data = serializer(data_page, many=True).data
+        jsonified_data = serializer(
+            data_page, many=True, context={"request": request}
+        ).data
     else:
         jsonified_data = data_page
 
@@ -112,11 +114,30 @@ class PaystackSDK:
 
 def get_country_currency_from_ip(ip_addr: str) -> str:
     """Get country from IP address"""
+    from devs.models import IPLog
+    from devs.tasks import log_ip_country
+
+    # check our db if the ip is know
+    ip_log = IPLog.objects.filter(ip_address=ip_addr).first()
+    if ip_log:
+        return ip_log.country
+
     token = get_env("IPINFO_TOKEN", "")
     response = requests.get(f"https://ipinfo.io/{ip_addr}/json?token={token}")
     if response.status_code == 200:
-        print("This is the currenct: ", response.json())
-        return response.json()
+        print("This is the current response: ", response.json())
+        country = response.json().get("country", "NG")
+        log_ip_country.apply_async(args=(ip_addr, country))
+        return country
     else:
         print("API Response: ", response.text)
         return ""
+
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(",")[0].strip()
+    else:
+        ip = request.META.get("REMOTE_ADDR")
+    return ip
