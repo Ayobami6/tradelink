@@ -23,4 +23,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", RootPage.as_view(), name="root"),
     path("api/v1/", include("app.urls")),
+    path("api/v1/", include("orders.urls")),
 ]

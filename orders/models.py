@@ -3,7 +3,7 @@ from django.core.validators import MinValueValidator
 from django.utils import timezone
 from app.models import Product
 
-from utils.constants import OrderStatus
+from utils.constants import OrderStatus, PaymentStatus
 import uuid
 
 
@@ -20,7 +20,7 @@ class Order(models.Model):
         max_length=20, choices=OrderStatus.choices(), default=OrderStatus.PENDING
     )
     payment_status = models.CharField(
-        max_length=20, default=OrderStatus.PENDING, choices=OrderStatus.choices()
+        max_length=20, default=PaymentStatus.PENDING, choices=PaymentStatus.choices()
     )
     shipping_address = models.TextField()
     shipping_fee = models.PositiveIntegerField(

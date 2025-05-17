@@ -22,3 +22,8 @@ class PaymentStatus(EnumBaseClass, Enum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     CANCELLED = "CANCELLED"
+
+
+class Courier(EnumBaseClass, Enum):
+    DHL = "DHL"
+    EXPRESS = "EXPRESS"

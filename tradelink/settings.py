@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "cloudinary_storage",
     "django_celery_beat",
     "django_celery_results",
+    "import_export",
     # installes apps
     "app",
     "orders",
