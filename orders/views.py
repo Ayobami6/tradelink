@@ -24,12 +24,12 @@ class AddToCartView(APIView):
     @exception_advice()
     def post(self, request, *args, **kwargs):
         # get cart id from session
-        cart_id = request.session.get("cart_id")
-        if not cart_id:
+        cart_id = request.headers.get("cart")
+        if not cart_id or cart_id == "":
             # create cart
             cart = Cart.objects.create()
             # save cart id to session
-            request.session["cart_id"] = str(cart.cart_id)
+            # request.session["cart_id"] = str(cart.cart_id)
         else:
             cart = Cart.objects.get(cart_id=cart_id)
 
@@ -60,6 +60,7 @@ class AddToCartView(APIView):
         product.reduce_available_quantity(quantity)
         data = {
             "items_count": cart.total_items(),
+            "cart_id": cart.cart_id,
         }
         return service_response(
             data=data,
@@ -74,7 +75,8 @@ class RemoveFromCartView(APIView):
     @exception_advice()
     def post(self, request, *args, **kwargs):
         # get cart id from session
-        cart_id = request.session.get("cart_id")
+        cart_id = request.headers.get("cart")
+        print("Let's see the cart: ", cart_id)
         if not cart_id:
             return service_response(
                 data={},
@@ -110,8 +112,8 @@ class CartDetail(APIView):
     @exception_advice()
     def get(self, request, *args, **kwargs):
         # get cart id from session
-        cart_id = request.session.get("cart_id")
-        if not cart_id:
+        cart_id = request.headers.get("cart")
+        if not cart_id or cart_id == "":
             return service_response(
                 data={},
                 message="Cart not found",
