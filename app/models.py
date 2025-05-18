@@ -167,7 +167,7 @@ class AppSetting(models.Model):
 
 
 class ExchangeRate(models.Model):
-    currency_code = models.CharField(max_length=10, unique=True)
+    currency_code = models.CharField(max_length=10, unique=True, db_index=True)
     rate = models.FloatField(validators=[MinValueValidator(0.0)])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
