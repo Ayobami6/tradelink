@@ -125,7 +125,6 @@ def get_country_currency_from_ip(ip_addr: str) -> str:
     token = get_env("IPINFO_TOKEN", "")
     response = requests.get(f"https://ipinfo.io/{ip_addr}/json?token={token}")
     if response.status_code == 200:
-        print("This is the current response: ", response.json())
         country = response.json().get("country", "NG")
         log_ip_country.apply_async(args=(ip_addr, country))
         return country
