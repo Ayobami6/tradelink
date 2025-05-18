@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CartItem, Product, ProductAssets, Cart
+from .models import CartItem, Product, ProductAssets, Cart, ExchangeRate
 from utils.utils import get_client_ip, get_country_currency_from_ip
 from utils.constants import country_currency_map
 
@@ -48,6 +48,14 @@ class ProductSerializer(serializers.ModelSerializer):
         currency = currency_details.get("currency", "NGN")
         symbol = currency_details.get("symbol", "₦")
         data["currency"] = currency
+        # get the exchange rate from the db
+        try:
+            exchange_rate = ExchangeRate.objects.get(currency_code=currency)
+            price = data["price"] * exchange_rate.rate
+            data["price"] = price
+        except ExchangeRate.DoesNotExist:
+            pass
+
         data["symbol"] = symbol
         return data
 
