@@ -18,7 +18,7 @@ import cloudinary.uploader
 import cloudinary.api
 from celery.schedules import crontab
 import os
-
+from corsheaders.defaults import default_headers
 
 from sparky_utils.logger import LoggerConfig
 
@@ -156,6 +156,11 @@ REST_FRAMEWORK = {
 }
 # cors settings
 CORS_ALLOW_ALL_ORIGINS = True
+
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "Cart",
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
