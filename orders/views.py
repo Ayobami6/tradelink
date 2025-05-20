@@ -137,6 +137,7 @@ class CartDetail(APIView):
                 for cart_item in cart.items.all()
             ],
             "total_price": cart.total_price(),
+            "all_items_weight": cart.total_items_weight(),
         }
         return service_response(
             data=data,
