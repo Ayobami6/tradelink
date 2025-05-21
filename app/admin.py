@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import CourierRate, Product, ProductAssets, Cart, AppSetting, ExchangeRate
+from .models import (
+    CourierRate,
+    Product,
+    ProductAssets,
+    Cart,
+    AppSetting,
+    ExchangeRate,
+    ProductCategory,
+)
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
@@ -123,6 +131,16 @@ class ExcahngeRateAdmin(admin.ModelAdmin):
     ordering = ("currency_code",)
 
 
+class ProductCategoryAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "created_at",
+        "updated_at",
+    )
+    search_fields = ("name",)
+
+
+admin.site.register(ProductCategory, ProductCategoryAdmin)
 admin.site.register(ExchangeRate, ExcahngeRateAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(AppSetting, AppSettingAdmin)
