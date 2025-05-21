@@ -19,6 +19,10 @@ class ProductAssetsSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     assets = ProductAssetsSerializer(many=True, read_only=True)
+    category = serializers.SerializerMethodField()
+
+    def get_category(self, obj):
+        return obj.category.name if obj.category else None
 
     class Meta:
         model = Product
@@ -33,6 +37,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "discount_price",
             "available_quantity",
             "top_deal",
+            "category",
         )
 
     def to_representation(self, instance):

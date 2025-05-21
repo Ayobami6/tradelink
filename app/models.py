@@ -8,7 +8,13 @@ from utils.constants import custom_fee_percentage_list
 
 from utils.constants import Courier
 
+
 # Create your models here.
+@str_meta
+class ProductCategory(models.Model):
+    name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 @str_meta
@@ -21,6 +27,13 @@ class Product(models.Model):
     description = models.TextField(null=True, blank=True)
     vendor_price = models.FloatField(default=0, validators=[MinValueValidator(0.0)])
     views = models.IntegerField(default=0)
+    category = models.ForeignKey(
+        ProductCategory,
+        on_delete=models.SET_NULL,
+        related_name="products",
+        null=True,
+        blank=True,
+    )
     weight_in_kg = models.FloatField(
         validators=[MinValueValidator(0.0)], help_text="Product weight in kg", null=True
     )
