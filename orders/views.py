@@ -169,6 +169,15 @@ class CheckoutAPIView(APIView):
                 status_code=400,
                 status="error",
             )
+        # get total item weight
+        total_weight = cart.total_items_weight()
+        if total_weight < 10.0:
+            return service_response(
+                data={},
+                status="error",
+                status_code=400,
+                message="The minimum order weight is 10kg!"
+            )
         total_payable_amount = float(cart.total_price()) + float(
             cart.calculated_shipping_fee
         )
