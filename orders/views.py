@@ -11,11 +11,13 @@ from sparky_utils.advice import exception_advice
 from sparky_utils.response import service_response
 from utils.utils import generate_ref, PaystackSDK, get_client_ip
 
-from app.models import Cart, Product, CartItem
+from app.models import Cart, ExchangeRate, Product, CartItem
 from app.tasks import send_email_async
 import hmac
 import hashlib
 from utils.constants import PaymentStatus
+from utils.utils import get_client_ip, get_country_currency_from_ip
+from utils.constants import country_currency_map
 
 
 # Create your views here.
@@ -121,6 +123,14 @@ class CartDetail(APIView):
                 status="error",
             )
         cart = Cart.objects.get(cart_id=cart_id)
+        ip = get_client_ip(request)
+        country = get_country_currency_from_ip(ip)
+        currency_details = country_currency_map.get(
+            country, {"currency": "EUR", "symbol": "€"}
+        )
+        currency = currency_details.get("currency", "NGN")
+        symbol = currency_details.get("symbol", "₦")
+        exchange_rate = ExchangeRate.objects.get(currency_code=currency)
         data = {
             "cart_id": cart.cart_id,
             "items_count": cart.total_items(),
@@ -132,12 +142,14 @@ class CartDetail(APIView):
                     "product_image": cart_item.product.assets.all()[0].image.url,
                     "quantity": cart_item.quantity,
                     "total_weight": cart_item.total_weight(),
-                    "total_price": cart_item.total_price(),
+                    "total_price": float(cart_item.total_price()) * exchange_rate.rate,
                 }
                 for cart_item in cart.items.all()
             ],
-            "total_price": cart.total_price(),
+            "total_price": float(cart.total_price()) * exchange_rate.rate,
             "all_items_weight": cart.total_items_weight(),
+            "currency": currency,
+            "symbol": symbol,
         }
         return service_response(
             data=data,
@@ -176,7 +188,7 @@ class CheckoutAPIView(APIView):
                 data={},
                 status="error",
                 status_code=400,
-                message="The minimum order weight is 10kg!"
+                message="The minimum order weight is 10kg!",
             )
         total_payable_amount = float(cart.total_price()) + float(
             cart.calculated_shipping_fee
