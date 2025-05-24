@@ -122,6 +122,14 @@ class CourierRateAdmin(ImportExportModelAdmin):
     list_filter = ("courier",)
     search_fields = ("courier", "kg")
     ordering = ("courier", "kg")
+    actions = ["remove_w_africa_fee"]
+
+    # add remove shipping fee for w_africa
+    def remove_w_africa_fee(self, request, queryset):
+        updated = queryset.update(w_africa=0.0)
+        self.message_user(request, f"{updated} item(s) marked as flagged.")
+
+    remove_w_africa_fee.short_description = "Remove W Africa Fee"
 
 
 class ExcahngeRateAdmin(admin.ModelAdmin):
