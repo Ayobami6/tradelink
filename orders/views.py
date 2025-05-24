@@ -17,7 +17,7 @@ import hmac
 import hashlib
 from utils.constants import PaymentStatus
 from utils.utils import get_client_ip, get_country_currency_from_ip
-from utils.constants import country_currency_map
+from utils.constants import country_currency_map, west_african_country_codes
 
 
 # Create your views here.
@@ -123,8 +123,11 @@ class CartDetail(APIView):
                 status="error",
             )
         cart = Cart.objects.get(cart_id=cart_id)
+        is_local = False
         ip = get_client_ip(request)
         country = get_country_currency_from_ip(ip)
+        if country in west_african_country_codes:
+            is_local = True
         currency_details = country_currency_map.get(
             country, {"currency": "EUR", "symbol": "€"}
         )
@@ -150,6 +153,7 @@ class CartDetail(APIView):
             "all_items_weight": cart.total_items_weight(),
             "currency": currency,
             "symbol": symbol,
+            "is_local": is_local,
         }
         return service_response(
             data=data,
