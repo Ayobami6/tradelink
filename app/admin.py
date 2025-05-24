@@ -34,6 +34,7 @@ class ProductAdmin(admin.ModelAdmin):
         "available_quantity",
         "vendor_price",
         "weight_in_kg",
+        "global_price",
     )
     list_filter = ("created_at", "updated_at")
     search_fields = ("name", "description")
@@ -45,12 +46,29 @@ class ProductAdmin(admin.ModelAdmin):
         # add 20 % of the vendor price
         if obj.vendor_price:
             percentage_multiplier = 0.2
+            # update global by 20 %
+            obj.global_price = obj.vendor_price + (
+                float(obj.vendor_price) * percentage_multiplier
+            )
             if obj.use_custom_fee_percentage:
                 percentage_multiplier = float(obj.custom_fee_percentage)
             obj.price = obj.vendor_price + (
                 float(obj.vendor_price) * percentage_multiplier
             )
         super().save_model(request, obj, form, change)
+
+    def update_global_price(self, request, queryset):
+        for product in queryset:
+            product.global_price = float(product.vendor_price) + (
+                float(product.vendor_price) * 0.2
+            )
+            product.save()
+        self.message_user(
+            request, f"{queryset.count()} product(s) global price updated successfully."
+        )
+
+    update_global_price.short_description = "Update Global Price"
+    actions = ["update_global_price"]
 
 
 @admin.register(Cart)

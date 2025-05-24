@@ -23,7 +23,14 @@ class Product(models.Model):
         default=uuid.uuid4, editable=False, unique=True, primary_key=True
     )
     name = models.CharField(max_length=500)
-    price = models.FloatField(editable=False)
+    price = models.FloatField(
+        editable=False, help_text="Product Local price for west african countries"
+    )
+    global_price = models.FloatField(
+        validators=[MinValueValidator(0.0)],
+        default=0.0,
+        help_text="Global Price, will be auto calculated using 20% of vendor price",
+    )
     description = models.TextField(null=True, blank=True)
     vendor_price = models.FloatField(default=0, validators=[MinValueValidator(0.0)])
     views = models.IntegerField(default=0)

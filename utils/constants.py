@@ -70,6 +70,26 @@ custom_fee_percentage = {
 custom_fee_percentage_list = list(custom_fee_percentage.items())
 
 
+west_african_country_codes = [
+    "BF",
+    "BJ",
+    "CI",
+    "CV",
+    "GH",
+    "GM",
+    "GN",
+    "GW",
+    "LR",
+    "ML",
+    "MR",
+    "NE",
+    "NG",
+    "SL",
+    "SN",
+    "TG",
+]
+
+
 country_currency_map = {
     "AF": {"currency": "AFN", "symbol": "؋"},
     "AL": {"currency": "ALL", "symbol": "Lek"},

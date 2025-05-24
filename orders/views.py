@@ -17,7 +17,7 @@ import hmac
 import hashlib
 from utils.constants import PaymentStatus
 from utils.utils import get_client_ip, get_country_currency_from_ip
-from utils.constants import country_currency_map
+from utils.constants import country_currency_map, west_african_country_codes
 
 
 # Create your views here.
@@ -123,8 +123,11 @@ class CartDetail(APIView):
                 status="error",
             )
         cart = Cart.objects.get(cart_id=cart_id)
+        is_local = False
         ip = get_client_ip(request)
         country = get_country_currency_from_ip(ip)
+        if country in west_african_country_codes:
+            is_local = True
         currency_details = country_currency_map.get(
             country, {"currency": "EUR", "symbol": "€"}
         )
@@ -150,6 +153,7 @@ class CartDetail(APIView):
             "all_items_weight": cart.total_items_weight(),
             "currency": currency,
             "symbol": symbol,
+            "is_local": is_local,
         }
         return service_response(
             data=data,
@@ -181,15 +185,19 @@ class CheckoutAPIView(APIView):
                 status_code=400,
                 status="error",
             )
-        # get total item weight
-        total_weight = cart.total_items_weight()
-        if total_weight < 10.0:
-            return service_response(
-                data={},
-                status="error",
-                status_code=400,
-                message="The minimum order weight is 10kg!",
-            )
+        ip = get_client_ip(request)
+        country = get_country_currency_from_ip(ip)
+        # if country not in west africa check if the total weight is less than 10kg
+        if country not in west_african_country_codes:
+            # get total item weight
+            total_weight = cart.total_items_weight()
+            if total_weight < 10.0:
+                return service_response(
+                    data={},
+                    status="error",
+                    status_code=400,
+                    message="The minimum order weight is 10kg!",
+                )
         total_payable_amount = float(cart.total_price()) + float(
             cart.calculated_shipping_fee
         )
